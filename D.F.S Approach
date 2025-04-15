@@ -1,0 +1,48 @@
+// Problem: Count Unreachable Pairs of Nodes in an Undirected Graph
+// Platform: Leetcode (Problem 2316)
+// Approach: DFS + Connected Components
+// Author: [Your Name or GitHub handle]  💻
+
+class Solution {
+public:
+    int p = 0;  // To store size of current component
+
+    // DFS to explore one connected component
+    void dfs(int i, unordered_map<int,vector<int>>& mp, unordered_set<int>& visited) {
+        visited.insert(i);
+        p++;
+        for (int a : mp[i]) {
+            if (visited.find(a) == visited.end()) {
+                dfs(a, mp, visited);
+            }
+        }
+    }
+
+    long long countPairs(int n, vector<vector<int>>& edges) {
+        unordered_map<int, vector<int>> mp; // Adjacency list
+
+        // Build the graph
+        for (int i = 0; i < edges.size(); i++) {
+            int u = edges[i][0];
+            int v = edges[i][1];
+            mp[u].push_back(v);
+            mp[v].push_back(u);
+        }
+
+        unordered_set<int> visited;
+        long long count = 0;
+        int k = 0; // Total nodes visited so far
+
+        // Traverse all components
+        for (int i = 0; i < n; i++) {
+            p = 0; // Reset size for current component
+            if (visited.find(i) == visited.end()) {
+                dfs(i, mp, visited);
+                count += 1LL * p * (n - p - k); // Count unreachable pairs
+                k += p; // Update total nodes visited
+            }
+        }
+
+        return count;
+    }
+};
