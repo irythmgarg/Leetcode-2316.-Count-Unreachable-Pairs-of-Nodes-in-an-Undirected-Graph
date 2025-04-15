@@ -1,0 +1,68 @@
+// Problem: Count Unreachable Pairs of Nodes in an Undirected Graph
+// Platform: Leetcode (Problem 2316)
+// Approach: Disjoint Set Union (DSU / Union-Find)
+// Author: [Your Name or GitHub Handle] 💻
+
+class Solution {
+public:
+    // Find the root of a node with path compression
+    int findparent(int x, vector<int>& parent) {
+        if (parent[x] == x)
+            return x;
+        return parent[x] = findparent(parent[x], parent);
+    }
+
+    // Union by rank to keep tree shallow
+    void findunion(int x, int y, vector<int>& ranks, vector<int>& parent) {
+        int xparent = findparent(x, parent);
+        int yparent = findparent(y, parent);
+
+        if (xparent == yparent) return;
+
+        if (ranks[xparent] > ranks[yparent]) {
+            parent[yparent] = xparent;
+        } else if (ranks[xparent] < ranks[yparent]) {
+            parent[xparent] = yparent;
+        } else {
+            parent[xparent] = yparent;
+            ranks[yparent]++;
+        }
+    }
+
+    long long countPairs(int n, vector<vector<int>>& edges) {
+        vector<int> parent(n), ranks(n, 0);
+
+        // Initialize parent of each node to itself
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
+
+        // Union all connected nodes
+        for (auto& edge : edges) {
+            int x = edge[0];
+            int y = edge[1];
+            int xparent = findparent(x, parent);
+            int yparent = findparent(y, parent);
+
+            if (xparent != yparent) {
+                findunion(xparent, yparent, ranks, parent);
+            }
+        }
+
+        // Count number of nodes in each connected component
+        unordered_map<int, int> mp;
+        for (int i = 0; i < n; i++) {
+            int root = findparent(i, parent);
+            mp[root]++;
+        }
+
+        // Calculate unreachable pairs
+        long long ans = 0, remaining = n;
+        for (auto& it : mp) {
+            ans += 1LL * it.second * (remaining - it.second);
+            remaining -= it.second;
+        }
+
+        return ans;
+    }
+};
